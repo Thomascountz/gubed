@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require_relative '../lib/breakpoint_manager'
+
+class GubedCLI
+  def initialize
+    @options = {}
+    @parser = create_option_parser
+  end
+
+  def run(args = ARGV)
+    @parser.parse!(args)
+    
+    root_path = args.first || '.'
+    
+    unless File.directory?(root_path)
+      puts "Error: '#{root_path}' is not a valid directory"
+      exit 1
+    end
+    
+    manager = BreakpointManager.new(root_path)
+    manager.run
+  rescue Interrupt
+    puts "\n\nExiting..."
+    exit 0
+  rescue => e
+    puts "Error: #{e.message}"
+    exit 1
+  end
+
+  private
+
+  def create_option_parser
+    OptionParser.new do |opts|
+      opts.banner = "Usage: gubed [options] [directory]"
+      opts.separator ""
+      opts.separator "Gubed is a Ruby breakpoint manager that helps you find, manage, and remove"
+      opts.separator "debugging breakpoints (binding.pry, debugger, etc.) in your Ruby projects."
+      opts.separator ""
+      opts.separator "Options:"
+
+      opts.on("-h", "--help", "Show this help message") do
+        puts opts
+        exit
+      end
+
+      opts.on("-v", "--version", "Show version") do
+        puts "Gubed version 1.0.0"
+        exit
+      end
+
+      opts.separator ""
+      opts.separator "Examples:"
+      opts.separator "  gubed                    # Scan current directory"
+      opts.separator "  gubed /path/to/project   # Scan specific directory"
+      opts.separator ""
+      opts.separator "Supported breakpoint types:"
+      opts.separator "  - binding.pry"
+      opts.separator "  - binding.irb"
+      opts.separator "  - binding.break"
+      opts.separator "  - debugger"
+      opts.separator "  - byebug"
+    end
+  end
+end
+
+if __FILE__ == $0
+  GubedCLI.new.run
+end
