@@ -79,7 +79,7 @@ module Gubed
     end
 
     def get_input
-      STDIN.getch
+      $stdin.getch
     end
 
     def prompt_for_breakpoint
@@ -164,7 +164,7 @@ module Gubed
 
     def exit_program?(input)
       print "Press #{(input == "\e") ? "esc" : input} again to exit or any other key to continue: "
-      response = STDIN.getch
+      response = $stdin.getch
       true if response == input
     end
 
