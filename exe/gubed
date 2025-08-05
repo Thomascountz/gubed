@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
-require 'optparse'
-require_relative '../lib/breakpoint_manager'
+require "optparse"
+require "gubed"
 
 class GubedCLI
   def initialize
@@ -11,15 +12,15 @@ class GubedCLI
 
   def run(args = ARGV)
     @parser.parse!(args)
-    
-    root_path = args.first || '.'
-    
+
+    root_path = args.first || "."
+
     unless File.directory?(root_path)
       puts "Error: '#{root_path}' is not a valid directory"
       exit 1
     end
-    
-    manager = BreakpointManager.new(root_path)
+
+    manager = Gubed::BreakpointManager.new(root_path)
     manager.run
   rescue Interrupt
     puts "\n\nExiting..."
@@ -46,7 +47,7 @@ class GubedCLI
       end
 
       opts.on("-v", "--version", "Show version") do
-        puts "Gubed version 1.0.0"
+        puts "Gubed version #{Gubed::VERSION}"
         exit
       end
 
@@ -65,6 +66,4 @@ class GubedCLI
   end
 end
 
-if __FILE__ == $0
-  GubedCLI.new.run
-end
+GubedCLI.new.run if $0 == __FILE__ || File.basename($0) == "gubed"

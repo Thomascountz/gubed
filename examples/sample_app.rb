@@ -5,7 +5,7 @@ class SampleApp
   end
 
   def add_user(name, email)
-    user = { name: name, email: email }
+    user = {name: name, email: email}
     # binding.irb # Commented out debug point
     @users << user
     debugger # Check user addition
@@ -13,7 +13,7 @@ class SampleApp
 
   def find_user(email)
     result = @users.find { |user| user[:email] == email }
-    binding.break if result.nil?
+    # binding.break if result.nil?
     result
   end
 
