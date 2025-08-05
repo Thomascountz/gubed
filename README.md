@@ -1,43 +1,72 @@
 # Gubed
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/gubed`. To experiment with that code, run `bin/console` for an interactive prompt.
+A command-line tool for managing debugger breakpoints in Ruby projects. Find, comment, uncomment, and delete debugging statements like `binding.pry`, `debugger`, `binding.irb`, and more.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
-```
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install gubed
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+Run `gubed` in any Ruby project directory to scan for debugging breakpoints:
+
+```bash
+$ gubed --help
+
+gubed                    # Scan current directory
+gubed /path/to/project   # Scan specific directory
+```
+
+### Interactive Mode
+
+Once Gubed finds breakpoints, you can:
+
+- Navigate with `j` (down) and `k` (up)
+- Press `c` to comment/uncomment breakpoints
+- Press `d` to delete breakpoints
+- Press `v` to view surrounding code context
+- Press `q` to quit
+- Press `h` for help
+
+### Supported Breakpoint Types
+
+These are found based on regex.
+
+- `binding.pry`
+- `binding.irb`
+- `binding.break`
+- `debugger`
+- `byebug`
+
+## Example
+
+```bash
+$ gubed
+Gubed - Ruby Breakpoint Manager
+========================================
+
+>  1. [#] binding.irb /Users/thomas.countz/Code/experiments/gubed/examples/calculator.rb:14
+   2. [ ] binding.break /Users/thomas.countz/Code/experiments/gubed/examples/calculator.rb:19
+   3. [ ] binding.pry /Users/thomas.countz/Code/experiments/gubed/examples/calculator.rb:3
+   4. [#] debugger /Users/thomas.countz/Code/experiments/gubed/examples/calculator.rb:8
+   5. [#] debugger /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:11
+   6. [ ] debugger /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:15
+   7. [#] binding.break /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:17
+   8. [ ] binding.break /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:22
+   9. [ ] byebug /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:25
+  10. [ ] binding.pry /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:4
+  11. [#] binding.irb /Users/thomas.countz/Code/experiments/gubed/examples/sample_app.rb:9
+
+Commands: [j]down [k]up [g]oto [v]iew [t]oggle [d]elete [r]efresh [q]uit [h]elp
+Selected: 1 of 11
+```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/gubed. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/gubed/blob/main/CODE_OF_CONDUCT.md).
+After checking out the repo, run `bin/setup` to install dependencies. Run `rake test` to run the tests.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Gubed project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/gubed/blob/main/CODE_OF_CONDUCT.md).
+MIT License Copyright (c) 2025 Thomas Countz
