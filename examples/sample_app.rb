@@ -8,16 +8,18 @@ class SampleApp
     user = {name: name, email: email}
     # binding.irb # Commented out debug point
     @users << user
-    debugger # Check user addition
+    # debugger # Check user addition
   end
 
   def find_user(email)
-    result = @users.find { |user| user[:email] == email }
+    debugger
+    @users.find { |user| user[:email] == email }
     # binding.break if result.nil?
-    result
   end
 
   def process_users
+    require "debug"
+    binding.break
     @users.each do |user|
       puts "Processing #{user[:name]}"
       byebug # Debug each user processing

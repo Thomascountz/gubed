@@ -3,22 +3,17 @@
 require "find"
 
 module Gubed
-  class Breakpoint
-    attr_reader :file, :line_number, :content, :type
-
-    def initialize(file, line_number, content, type)
-      @file = file
-      @line_number = line_number
-      @content = content.strip
-      @type = type
+  Breakpoint = Data.define(:file, :line_number, :content, :type) do
+    def initialize(file:, line_number:, content:, type:)
+      super(file: file, line_number: line_number, content: content.strip, type: type)
     end
 
     def commented?
-      @content.strip.start_with?("#")
+      content.start_with?("#")
     end
 
     def location
-      "#{@file}:#{@line_number}"
+      "#{file}:#{line_number}"
     end
   end
 
@@ -33,6 +28,7 @@ module Gubed
     }.freeze
 
     RUBY_FILE_EXTENSIONS = %w[.rb .rake .gemspec].freeze
+    DIR_TO_SKIP = %w[.git vendor node_modules tmp].freeze
 
     def initialize(root_path = ".")
       @root_path = File.expand_path(root_path)
@@ -42,9 +38,12 @@ module Gubed
       breakpoints = []
 
       Find.find(@root_path) do |path|
-        next if File.directory?(path)
+        if File.directory?(path)
+          Find.prune if DIR_TO_SKIP.any? { |dir| path.include?(dir) }
+          next
+        end
+
         next unless ruby_file?(path)
-        next if skip_file?(path)
 
         breakpoints.concat(scan_file(path))
       end
@@ -60,7 +59,6 @@ module Gubed
     end
 
     def ruby_shebang?(path)
-      return false unless File.readable?(path)
       first_line = begin
         File.open(path, &:readline).strip
       rescue
@@ -69,24 +67,17 @@ module Gubed
       first_line.include?("ruby")
     end
 
-    def skip_file?(path)
-      path.include?("/.git/") ||
-        path.include?("/vendor/") ||
-        path.include?("/node_modules/") ||
-        path.include?("/tmp/")
-    end
-
     def scan_file(file_path)
       breakpoints = []
 
-      File.readlines(file_path).each_with_index do |line, index|
+      File.foreach(file_path).each_with_index do |line, index|
         BREAKPOINT_PATTERNS.each do |type, pattern|
           if line.match(pattern)
             breakpoints << Breakpoint.new(
-              file_path,
-              index + 1,
-              line.chomp,
-              type
+              file: file_path,
+              line_number: index + 1,
+              content: line.chomp,
+              type: type
             )
             break
           end

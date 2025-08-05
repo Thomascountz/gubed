@@ -10,9 +10,8 @@ class Calculator
   end
 
   def multiply(a, b)
-    result = a * b
-    binding.irb
-    result
+    a * b
+    # binding.irb
   end
 
   def divide(a, b)

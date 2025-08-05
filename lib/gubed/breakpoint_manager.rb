@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "readline"
+require "io/console"
 
 module Gubed
   class BreakpointManager
@@ -8,6 +8,7 @@ module Gubed
       @scanner = BreakpointScanner.new(root_path)
       @breakpoints = []
       @current_index = 0
+      @message = nil
     end
 
     def run
@@ -16,32 +17,29 @@ module Gubed
 
       loop do
         show_list
+        puts @message if @message
         input = get_input
 
         case input
-        when "q", "quit", "exit"
-          break
-        when "r", "refresh"
+        when "q"
+          break if exit_program?(input)
+        when "r"
           refresh_breakpoints
           @current_index = 0
-        when "c", "comment"
-          toggle_comment(true)
-        when "u", "uncomment"
-          toggle_comment(false)
-        when "d", "delete"
+        when "t"
+          toggle_comment
+        when "d"
           delete_breakpoint
-        when "v", "view"
+        when "v"
           show_context
-        when /^\d+$/
-          select_breakpoint(input.to_i)
-        when "j", "down"
+        when "g"
+          prompt_for_breakpoint
+        when "j"
           move_down
-        when "k", "up"
+        when "k"
           move_up
-        when "h", "help", "?"
+        when "h", "?"
           show_help
-        else
-          puts "Unknown command. Type 'h' for help."
         end
       end
     end
@@ -66,29 +64,34 @@ module Gubed
         return
       end
 
+      width = @breakpoints.length.to_s.length
       @breakpoints.each_with_index do |bp, index|
         marker = (index == @current_index) ? ">" : " "
-        status = bp.commented? ? "[C]" : "[A]"
+        status = bp.commented? ? "[#]" : "[ ]"
+        number = (index + 1).to_s.rjust(width)
 
-        puts "#{marker} #{index + 1}. #{status} #{bp.type} #{bp.location}"
+        puts "#{marker} #{number}. #{status} #{bp.type} #{bp.location}"
       end
 
       puts
-      puts "Commands: [j]down [k]up [v]iew [c]omment [u]ncomment [d]elete [r]efresh [q]uit [h]elp"
+      puts "Commands: [j]down [k]up [g]oto [v]iew [t]oggle [d]elete [r]efresh [q]uit [h]elp"
       puts "Selected: #{@current_index + 1} of #{@breakpoints.length}"
-      print "> "
     end
 
     def get_input
-      Readline.readline("", true)&.strip&.downcase || ""
+      STDIN.getch
     end
 
-    def select_breakpoint(num)
+    def prompt_for_breakpoint
+      print "Go to breakpoint: "
+      input = gets.chomp
+      return if input.empty?
+
+      num = input.to_i
       if num.between?(1, @breakpoints.length)
         @current_index = num - 1
       else
-        puts "Invalid selection. Press Enter to continue."
-        gets
+        @message = "Invalid selection: #{num}."
       end
     end
 
@@ -125,33 +128,19 @@ module Gubed
       gets
     end
 
-    def toggle_comment(comment_out)
+    def toggle_comment
       return if @breakpoints.empty?
 
       bp = @breakpoints[@current_index]
 
-      if comment_out && bp.commented?
-        puts "Already commented. Press Enter to continue."
-        gets
-        return
-      end
-
-      if !comment_out && !bp.commented?
-        puts "Not commented. Press Enter to continue."
-        gets
-        return
-      end
-
       modify_line(bp) do |line|
-        if comment_out
-          line.sub(/^(\s*)/, '\1# ')
-        else
+        if bp.commented?
           line.sub(/^(\s*)#\s*/, '\1')
+        else
+          line.sub(/^(\s*)/, '\1# ')
         end
       end
 
-      puts "#{comment_out ? "Commented" : "Uncommented"} breakpoint. Press Enter to continue."
-      gets
       refresh_breakpoints
     end
 
@@ -169,10 +158,14 @@ module Gubed
       lines.delete_at(bp.line_number - 1)
       File.write(bp.file, lines.join)
 
-      puts "Deleted breakpoint. Press Enter to continue."
-      gets
       refresh_breakpoints
       @current_index = [@current_index, @breakpoints.length - 1].min if @breakpoints.any?
+    end
+
+    def exit_program?(input)
+      print "Press #{(input == "\e") ? "esc" : input} again to exit or any other key to continue: "
+      response = STDIN.getch
+      true if response == input
     end
 
     def modify_line(breakpoint)
@@ -184,18 +177,17 @@ module Gubed
     def show_help
       puts
       puts "Commands:"
-      puts "  j, down    - Move selection down"
-      puts "  k, up      - Move selection up"
-      puts "  1-9        - Jump to breakpoint number"
-      puts "  v, view    - Show context around breakpoint"
-      puts "  c, comment - Comment out selected breakpoint"
-      puts "  u, uncomment - Uncomment selected breakpoint"
-      puts "  d, delete  - Delete selected breakpoint"
-      puts "  r, refresh - Rescan for breakpoints"
-      puts "  q, quit    - Exit program"
-      puts "  h, help    - Show this help"
+      puts "  j          - Move selection down"
+      puts "  k          - Move selection up"
+      puts "  g          - Go to a specific breakpoint by number"
+      puts "  v          - Show context around breakpoint"
+      puts "  t          - Toggle line comment on selected breakpoint"
+      puts "  d          - Delete selected breakpoint"
+      puts "  r          - Rescan for breakpoints"
+      puts "  q          - Exit program"
+      puts "  h, ?       - Show this help"
       puts
-      puts "Legend: [A] = Active, [C] = Commented"
+      puts "Legend: [ ] = Active, [#] = Commented"
       puts
       print "Press Enter to continue..."
       gets
