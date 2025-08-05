@@ -24,11 +24,13 @@ gubed /path/to/project   # Scan specific directory
 Once Gubed finds breakpoints, you can:
 
 - Navigate with `j` (down) and `k` (up)
-- Press `c` to comment/uncomment breakpoints
+- Press `t` to toggle comment/uncomment breakpoints
 - Press `d` to delete breakpoints
 - Press `v` to view surrounding code context
+- Press `g` to go to a specific breakpoint by number
+- Press `r` to refresh/rescan breakpoints
 - Press `q` to quit
-- Press `h` for help
+- Press `h` or `?` for help
 
 ### Supported Breakpoint Types
 
